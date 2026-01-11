@@ -1,0 +1,443 @@
+:root {
+    --bg-color: #0b0b0b;
+    --text-color: #ffffff;
+    --accent-color: #007aff;
+    --secondary-bg: rgba(255, 255, 255, 0.08);
+    --secondary-text: #8e8e93;
+    --ring-bg: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(28, 28, 30, 0.8);
+    --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg-color: #f5f5f7;
+        --text-color: #1d1d1f;
+        --secondary-bg: rgba(0, 0, 0, 0.05);
+        --secondary-text: #86868b;
+        --ring-bg: rgba(0, 0, 0, 0.05);
+        --card-bg: rgba(255, 255, 255, 0.8);
+    }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.5s ease;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* 上部基点に変更して見切れを防止 */
+    padding: 40px 20px;
+}
+
+/* モードセレクター */
+.mode-selector {
+    display: flex;
+    background: var(--secondary-bg);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+}
+
+.btn-mode {
+    background: transparent;
+    color: var(--secondary-text);
+    padding: 6px 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-mode.active {
+    background: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* タイマーリング */
+.timer-display {
+    position: relative;
+    width: min(45vw, 45vh);
+    /* 通常サイズ */
+    max-width: 420px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+        max-width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.running .timer-display {
+    width: min(65vw, 65vh);
+    /* 実行中のみ拡大 */
+    max-width: 580px;
+}
+
+.progress-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progress-ring__circle {
+    fill: transparent;
+    stroke: var(--accent-color);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 282.7;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.progress-ring__background {
+    fill: transparent;
+    stroke: var(--ring-bg);
+    stroke-width: 3;
+}
+
+/* 中央表示 */
+.time-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.time-text {
+    font-size: min(12vw, 12vh, 100px);
+    /* 通常サイズ */
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -2px;
+    transition: font-size 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.running .time-text {
+    font-size: min(18vw, 18vh, 140px);
+    /* 実行中のみ拡大 */
+    letter-spacing: -3px;
+}
+
+.time-input {
+    position: absolute;
+    font-size: min(12vw, 12vh, 100px);
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-color);
+    background: transparent;
+    border: none;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    opacity: 0;
+    pointer-events: auto;
+    transition: font-size 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.running .time-input {
+    font-size: min(18vw, 18vh, 140px);
+}
+
+.time-input:focus {
+    opacity: 1;
+}
+
+.time-input:focus+.time-text {
+    opacity: 0;
+}
+
+.phase-indicator {
+    font-size: 18px;
+    color: var(--secondary-text);
+    margin-top: 8px;
+    font-weight: 500;
+    height: 24px;
+    /* 高さを固定してガタつき防止 */
+}
+
+/* コントロール */
+.main-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 999px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 14px 48px;
+    font-size: 18px;
+}
+
+.cancel-btn {
+    background-color: var(--secondary-bg);
+    color: var(--text-color);
+    padding: 14px 28px;
+    font-size: 16px;
+}
+
+.btn-primary:active,
+.cancel-btn:active {
+    transform: scale(0.96);
+}
+
+/* 設定パネル */
+.setup-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.settings-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.presets {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-preset {
+    background: var(--secondary-bg);
+    color: var(--text-color);
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.btn-preset.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.cycle-phases {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    /* フェーズが増えても溢れないように制限 */
+    overflow-y: auto;
+    padding-right: 4px;
+    /* スクロールバー用の余白 */
+}
+
+/* スクロールバーのカスタマイズ */
+.cycle-phases::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cycle-phases::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cycle-phases::-webkit-scrollbar-thumb {
+    background: var(--secondary-bg);
+    border-radius: 10px;
+}
+
+.phase-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--secondary-bg);
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.phase-name-input {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-family: inherit;
+    font-weight: 500;
+    flex-grow: 1;
+    outline: none;
+}
+
+.phase-time-input {
+    width: 40px;
+    background: transparent;
+    border: none;
+    color: var(--accent-color);
+    text-align: right;
+    font-weight: 600;
+    outline: none;
+}
+
+.btn-remove-phase {
+    background: none;
+    border: none;
+    color: #ff3b30;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 4px;
+}
+
+.btn-text {
+    background: transparent;
+    color: var(--accent-color);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.cycle-summary {
+    font-size: 13px;
+    color: var(--secondary-text);
+    margin-top: 8px;
+}
+
+.options-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btn-option {
+    background: var(--secondary-bg);
+    color: var(--secondary-text);
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.btn-option.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* 履歴 (左下) */
+.history-sidebar {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+    max-width: 320px;
+}
+
+.history-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--secondary-text);
+    margin-bottom: 12px;
+}
+
+.recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.2s ease;
+}
+
+.history-card:hover {
+    transform: scale(1.02);
+}
+
+.history-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-info {
+    flex-grow: 1;
+}
+
+.history-time {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.history-label {
+    font-size: 11px;
+    color: var(--secondary-text);
+}
+
+.history-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-card-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--accent-color);
+    padding: 4px;
+}
+
+.btn-card-del {
+    color: #ff3b30;
+}
+
+/* 実行中UIの制御 */
+body.running .mode-selector,
+body.running .setup-panel,
+body.running .history-sidebar {
+    opacity: 0.1;
+    pointer-events: none;
+    filter: blur(2px);
+    transition: all 0.5s ease;
+}

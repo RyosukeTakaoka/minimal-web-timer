@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Timer - Spec C Refined</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="container">
+        <!-- モード切替 -->
+        <div class="mode-selector">
+            <button id="mode-timer" class="btn btn-mode active">タイマー</button>
+            <button id="mode-cycle" class="btn btn-mode">サイクル</button>
+        </div>
+
+        <!-- プログレスリング (中央) -->
+        <div class="timer-display">
+            <svg class="progress-ring" viewBox="0 0 100 100">
+                <circle class="progress-ring__background" cx="50" cy="50" r="45"></circle>
+                <circle class="progress-ring__circle" cx="50" cy="50" r="45"></circle>
+            </svg>
+            <div id="time-container" class="time-container">
+                <input type="text" id="time-input" class="time-input" value="25:00" spellcheck="false">
+                <div id="time-display" class="time-text">25:00</div>
+                <div id="phase-indicator" class="phase-indicator">作業</div>
+            </div>
+        </div>
+
+        <!-- メイン操作ボタン -->
+        <div class="main-controls">
+            <button id="main-action" class="btn btn-primary">開始</button>
+            <button id="cancel-action" class="btn btn-secondary cancel-btn" style="display: none;">キャンセル</button>
+        </div>
+
+        <!-- 設定パネル -->
+        <div class="setup-panel">
+            <!-- 通常タイマー用設定 -->
+            <div id="timer-settings" class="settings-section">
+                <div class="presets">
+                    <button class="btn btn-preset" data-minutes="5">5分</button>
+                    <button class="btn btn-preset" data-minutes="10">10分</button>
+                    <button class="btn btn-preset" data-minutes="25">25分</button>
+                    <button class="btn btn-preset" data-minutes="50">50分</button>
+                </div>
+            </div>
+
+            <!-- サイクル設定 -->
+            <div id="cycle-settings" class="settings-section" style="display: none;">
+                <div class="section-title">サイクル構成</div>
+                <div id="cycle-phases" class="cycle-phases">
+                    <!-- フェーズが動的に追加される -->
+                </div>
+                <button id="add-phase" class="btn btn-text">+ フェーズ追加</button>
+                <div class="cycle-summary" id="cycle-summary">合計: 25分</div>
+            </div>
+
+            <!-- 共通オプション -->
+            <div class="options-row">
+                <button id="sound-toggle" class="btn btn-option active">音: ON</button>
+                <button id="loop-toggle" class="btn btn-option active">ループ: ON</button>
+            </div>
+        </div>
+
+        <!-- 履歴セクション (左下) -->
+        <aside class="history-sidebar">
+            <div class="history-header">最近使った項目</div>
+            <div id="recent-items" class="recent-list">
+                <!-- 履歴カード -->
+            </div>
+        </aside>
+    </main>
+    <script src="script.js"></script>
+</body>
+
+</html>
