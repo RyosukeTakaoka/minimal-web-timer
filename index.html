@@ -4,70 +4,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Timer - Spec C Refined</title>
+    <title>Minimal Timer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <main class="container">
         <!-- モード切替 -->
-        <div class="mode-selector">
-            <button id="mode-timer" class="btn btn-mode active">タイマー</button>
-            <button id="mode-cycle" class="btn btn-mode">サイクル</button>
+        <div class="mode-selector" role="tablist" aria-label="タイマーモード">
+            <button id="mode-timer" class="btn btn-mode active" role="tab" aria-selected="true">タイマー</button>
+            <button id="mode-cycle" class="btn btn-mode" role="tab" aria-selected="false">サイクル</button>
         </div>
 
         <!-- プログレスリング (中央) -->
-        <div class="timer-display">
-            <svg class="progress-ring" viewBox="0 0 100 100">
+        <div class="timer-display" aria-label="タイマー表示（クリックして時間を編集）">
+            <svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true">
                 <circle class="progress-ring__background" cx="50" cy="50" r="45"></circle>
                 <circle class="progress-ring__circle" cx="50" cy="50" r="45"></circle>
             </svg>
             <div id="time-container" class="time-container">
-                <input type="text" id="time-input" class="time-input" value="25:00" spellcheck="false">
-                <div id="time-display" class="time-text">25:00</div>
-                <div id="phase-indicator" class="phase-indicator">作業</div>
+                <input type="text" id="time-input" class="time-input" value="25:00" spellcheck="false"
+                    aria-label="タイマー時間（MM:SS形式で入力）" inputmode="numeric">
+                <div id="time-display" class="time-text" aria-live="off">25:00</div>
+                <div id="phase-indicator" class="phase-indicator" aria-live="polite">待機中</div>
             </div>
         </div>
 
         <!-- メイン操作ボタン -->
         <div class="main-controls">
-            <button id="main-action" class="btn btn-primary">開始</button>
-            <button id="cancel-action" class="btn btn-secondary cancel-btn" style="display: none;">キャンセル</button>
+            <button id="main-action" class="btn btn-primary" aria-label="タイマーを開始">開始</button>
+            <button id="cancel-action" class="btn btn-secondary cancel-btn" style="display: none;"
+                aria-label="タイマーをキャンセル">キャンセル</button>
         </div>
 
         <!-- 設定パネル -->
         <div class="setup-panel">
             <!-- 通常タイマー用設定 -->
             <div id="timer-settings" class="settings-section">
-                <div class="presets">
-                    <button class="btn btn-preset" data-minutes="5">5分</button>
-                    <button class="btn btn-preset" data-minutes="10">10分</button>
-                    <button class="btn btn-preset" data-minutes="25">25分</button>
-                    <button class="btn btn-preset" data-minutes="50">50分</button>
+                <div class="presets" role="group" aria-label="プリセット時間">
+                    <button class="btn btn-preset" data-minutes="5" aria-label="5分">5分</button>
+                    <button class="btn btn-preset" data-minutes="10" aria-label="10分">10分</button>
+                    <button class="btn btn-preset" data-minutes="25" aria-label="25分">25分</button>
+                    <button class="btn btn-preset" data-minutes="50" aria-label="50分">50分</button>
                 </div>
             </div>
 
             <!-- サイクル設定 -->
             <div id="cycle-settings" class="settings-section" style="display: none;">
                 <div class="section-title">サイクル構成</div>
-                <div id="cycle-phases" class="cycle-phases">
+                <div id="cycle-phases" class="cycle-phases" role="list">
                     <!-- フェーズが動的に追加される -->
                 </div>
-                <button id="add-phase" class="btn btn-text">+ フェーズ追加</button>
-                <div class="cycle-summary" id="cycle-summary">合計: 25分</div>
+                <button id="add-phase" class="btn btn-text" aria-label="フェーズを追加">+ フェーズ追加</button>
+                <div class="cycle-summary" id="cycle-summary" aria-live="polite">合計: 25分</div>
             </div>
 
             <!-- 共通オプション -->
             <div class="options-row">
-                <button id="sound-toggle" class="btn btn-option active">音: ON</button>
-                <button id="loop-toggle" class="btn btn-option active">ループ: ON</button>
+                <button id="sound-toggle" class="btn btn-option active" aria-pressed="true"
+                    aria-label="音のON/OFF切替">音: ON</button>
+                <button id="loop-toggle" class="btn btn-option active" aria-pressed="true"
+                    aria-label="ループのON/OFF切替">ループ: ON</button>
             </div>
         </div>
 
+        <!-- キーボードショートカットヒント -->
+        <div class="keyboard-hints" aria-hidden="true">
+            <span><kbd class="kbd">Space</kbd>開始/一時停止</span>
+            <span><kbd class="kbd">R</kbd>リセット</span>
+            <span><kbd class="kbd">1〜5</kbd>履歴から起動</span>
+        </div>
+
         <!-- 履歴セクション (左下) -->
-        <aside class="history-sidebar">
+        <aside class="history-sidebar" aria-label="最近使ったタイマー">
             <div class="history-header">最近使った項目</div>
-            <div id="recent-items" class="recent-list">
+            <div id="recent-items" class="recent-list" role="list">
                 <!-- 履歴カード -->
             </div>
         </aside>

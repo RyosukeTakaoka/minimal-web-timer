@@ -38,6 +38,7 @@ let audioCtx = null;
 function initAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    requestNotificationPermission();
 }
 
 function playChime() {
@@ -64,6 +65,35 @@ function playChime() {
     playBeep(now + 0.6, 880);
 }
 
+function playTestBeep() {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, now);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.25);
+}
+
+// ブラウザ通知
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+function sendNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+        new Notification(title, { body, silent: true });
+    }
+}
+
 // UI更新
 function updateDisplay() {
     const m = Math.floor(timeLeft / 60);
@@ -80,8 +110,10 @@ function updateDisplay() {
 
     if (state === 'running' || state === 'paused') {
         phaseIndicator.textContent = activeMode === 'cycle' ? phases[currentPhaseIndex].name : 'タイマー実行中';
+        document.title = `${formatted} — タイマー`;
     } else {
         phaseIndicator.textContent = '待機中';
+        document.title = 'Minimal Timer';
     }
 }
 
@@ -93,6 +125,7 @@ function setState(s) {
     switch (state) {
         case 'idle':
             mainActionBtn.textContent = '開始';
+            document.title = 'Minimal Timer';
             break;
         case 'running':
             mainActionBtn.textContent = '一時停止';
@@ -102,6 +135,7 @@ function setState(s) {
             break;
         case 'finished':
             mainActionBtn.textContent = 'リセット';
+            document.title = '完了 — タイマー';
             break;
     }
 }
@@ -119,8 +153,21 @@ function startTimer() {
             updateDisplay();
             clearInterval(timerId);
             playChime();
-            if (activeMode === 'cycle') nextPhase();
-            else setState('finished');
+            if (activeMode === 'cycle') {
+                const finishedPhaseName = phases[currentPhaseIndex].name;
+                const nextIndex = currentPhaseIndex + 1;
+                if (nextIndex < phases.length) {
+                    sendNotification(`${finishedPhaseName} 終了`, `次のフェーズ: ${phases[nextIndex].name}`);
+                } else if (isLoopOn) {
+                    sendNotification(`${finishedPhaseName} 終了`, 'サイクルをループします');
+                } else {
+                    sendNotification('サイクル完了', 'すべてのフェーズが終了しました');
+                }
+                nextPhase();
+            } else {
+                sendNotification('タイマー終了', 'タイマーが完了しました');
+                setState('finished');
+            }
         } else {
             updateDisplay();
         }
@@ -201,10 +248,10 @@ function renderPhases() {
         const row = document.createElement('div');
         row.className = 'phase-row';
         row.innerHTML = `
-            <input type="text" class="phase-name-input" value="${p.name}" data-index="${i}">
-            <input type="number" class="phase-time-input" value="${p.minutes}" data-index="${i}" min="1">
+            <input type="text" class="phase-name-input" value="${p.name}" data-index="${i}" aria-label="フェーズ名">
+            <input type="number" class="phase-time-input" value="${p.minutes}" data-index="${i}" min="1" aria-label="分数">
             <span>分</span>
-            ${phases.length > 1 ? `<button class="btn-remove-phase" data-index="${i}">✕</button>` : ''}
+            ${phases.length > 1 ? `<button class="btn-remove-phase" data-index="${i}" aria-label="フェーズを削除">✕</button>` : ''}
         `;
         phaseContainer.appendChild(row);
     });
@@ -246,8 +293,8 @@ function renderHistory() {
                 <div class="history-label">${h.label}</div>
             </div>
             <div class="history-controls">
-                <button class="btn-card-action btn-play" data-index="${i}">▶</button>
-                <button class="btn-card-action btn-card-del" data-index="${i}">✕</button>
+                <button class="btn-card-action btn-play" data-index="${i}" aria-label="再生">▶</button>
+                <button class="btn-card-action btn-card-del" data-index="${i}" aria-label="削除">✕</button>
             </div>
         `;
         recentItemsList.appendChild(card);
@@ -295,7 +342,13 @@ phaseContainer.addEventListener('click', (e) => {
     }
 });
 
-soundToggle.addEventListener('click', () => { isSoundOn = !isSoundOn; soundToggle.textContent = `音: ${isSoundOn ? 'ON' : 'OFF'}`; soundToggle.classList.toggle('active', isSoundOn); });
+soundToggle.addEventListener('click', () => {
+    isSoundOn = !isSoundOn;
+    soundToggle.textContent = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
+    soundToggle.classList.toggle('active', isSoundOn);
+    if (isSoundOn) playTestBeep();
+});
+
 loopToggle.addEventListener('click', () => { isLoopOn = !isLoopOn; loopToggle.textContent = `ループ: ${isLoopOn ? 'ON' : 'OFF'}`; loopToggle.classList.toggle('active', isLoopOn); });
 
 recentItemsList.addEventListener('click', (e) => {
@@ -356,3 +409,8 @@ renderHistory();
 switchMode('timer');
 progressCircle.style.strokeDasharray = circumference;
 progressCircle.style.strokeDashoffset = 0;
+
+// デフォルトで25分プリセットをアクティブにする
+document.querySelectorAll('.btn-preset').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.minutes) === timerMinutes);
+});
